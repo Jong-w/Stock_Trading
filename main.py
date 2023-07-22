@@ -21,8 +21,8 @@ df = df.sort_values('Date')
 df = df.reset_index(drop=True)
 
 # The algorithms require a vectorized environment to run
-env = DummyVecEnv([lambda: StockTradingEnv(df)])
-#env = StockTradingEnv(df)
+#env = DummyVecEnv([lambda: StockTradingEnv(df)])
+env = StockTradingEnv(df)
 
 torch.autograd.set_detect_anomaly(True)
 model = PPO("MlpPolicy", env, verbose=1)

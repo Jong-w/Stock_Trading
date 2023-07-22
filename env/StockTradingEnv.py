@@ -34,8 +34,7 @@ class StockTradingEnv(gym.Env):
     def _next_observation(self):
         # Get the stock data points for the last 5 days and scale to between 0-1
         frame = np.array([
-            self.df['Tic'][[self.current_step, self.current_step+2000, self.current_step+4000, self.current_step +
-                            6000, self.current_step+8000, self.current_step+10000]],
+            self.df['Tic'][[self.current_step, self.current_step+2000, self.current_step+4000, self.current_step + 6000, self.current_step+8000, self.current_step+10000]],
             self.df['Open'][[self.current_step, self.current_step + 2000, self.current_step + 4000, self.current_step +
                              6000, self.current_step + 8000, self.current_step + 10000]].values / max(self.df.Open),
             self.df['High'][[self.current_step, self.current_step + 2000, self.current_step + 4000, self.current_step +
@@ -93,6 +92,7 @@ class StockTradingEnv(gym.Env):
         if self.net_worth > self.max_net_worth:
             self.max_net_worth = self.net_worth
 
+
         if self.shares_held == 0:
             self.cost_basis = 0
 
@@ -105,10 +105,27 @@ class StockTradingEnv(gym.Env):
         if self.current_step > len(self.df.loc[:, 'Open'].values) - 10001:
             self.current_step = 0
 
+        if self.max_net_worth >= MAX_ACCOUNT_BALANCE:
+            self.max_net_worth = MAX_ACCOUNT_BALANCE
+        if self.balance >= MAX_ACCOUNT_BALANCE:
+            self.balance = MAX_ACCOUNT_BALANCE
+        if self.cost_basis >= MAX_SHARE_PRICE:
+            self.cost_basis = MAX_SHARE_PRICE
+        if self.shares_held >= MAX_NUM_SHARES:
+            self.shares_held = MAX_NUM_SHARES
+        if self.total_shares_sold >= MAX_NUM_SHARES:
+            self.total_shares_sold = MAX_NUM_SHARES
+        if self.total_sales_value >= (MAX_NUM_SHARES * MAX_SHARE_PRICE):
+            self.total_sales_value = (MAX_NUM_SHARES * MAX_SHARE_PRICE)
+
         delay_modifier = (self.current_step / MAX_STEPS)
 
         reward = self.balance * delay_modifier
-        done = self.net_worth <= 0
+        done = (self.balance == MAX_ACCOUNT_BALANCE) or (self.max_net_worth == MAX_ACCOUNT_BALANCE) or (self.net_worth <= 0) \
+               or (self.cost_basis == MAX_SHARE_PRICE) or (self.shares_held == MAX_NUM_SHARES) or (self.total_shares_sold == MAX_NUM_SHARES) \
+               or (self.total_sales_value == (MAX_NUM_SHARES * MAX_SHARE_PRICE))
+
+
 
         obs = self._next_observation()
 
